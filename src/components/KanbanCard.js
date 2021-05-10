@@ -1,34 +1,75 @@
 import ListTask from './ListTask';
 import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd';
+import { useState } from 'react';
 
-export default function KanbanCard({ title, todolist = [], id, index }) {
+export default function KanbanCard({
+  title,
+  todolist = [],
+  index,
+  addListFunc,
+  delFunc,
+}) {
+  const [form, setform] = useState('');
+
+  const _handleChange = (e) => {
+    setform(e.target.value);
+  };
+
+  const _handlePress = (e) => {
+    if (e.key === 'Enter') {
+      addListFunc(title, form);
+      setform('');
+    }
+  };
+
   return (
-    <Droppable droppableId={title}>
+    <Draggable draggableId={title} index={index} key={index}>
       {(provider, snapshot) => (
         <div
-          className="flex flex-col col-span-3"
+          className="col-span-3"
           ref={provider.innerRef}
-          {...provider.droppableProps}
+          {...provider.draggableProps}
+          {...provider.dragHandleProps}
         >
-          <h1 className="font-semibold">{title}</h1>
-          <div
-            className="w-full bg-gray-100 rounded-md flex flex-col mt-5 p-3"
-            style={{ minHeight: '200px' }}
-          >
-            <ul>
-              {todolist.map((todo, index) => (
-                <ListTask
-                  id={todo.id}
-                  key={todo.id}
-                  content={todo.content}
-                  index={index}
-                />
-              ))}
-              {provider.placeholder}
-            </ul>
-          </div>
+          <Droppable droppableId={title} direction="vertical">
+            {(provider, snapshot) => (
+              <div
+                className="flex flex-col "
+                ref={provider.innerRef}
+                {...provider.droppableProps}
+              >
+                <h1 className="font-semibold">{title}</h1>
+                <div
+                  className="w-full bg-gray-100 rounded-md flex flex-col mt-5 p-3"
+                  style={{ minHeight: '200px' }}
+                >
+                  <ul className="flex-grow">
+                    {todolist.map((todo, index) => (
+                      <ListTask
+                        id={todo.id}
+                        key={todo.id}
+                        content={todo.content}
+                        index={index}
+                        removeList={delFunc}
+                        category={title}
+                      />
+                    ))}
+                    {provider.placeholder}
+                  </ul>
+                  <input
+                    type="text"
+                    placeholder="New List"
+                    className="p-2"
+                    onChange={_handleChange}
+                    onKeyPress={_handlePress}
+                    value={form}
+                  />
+                </div>
+              </div>
+            )}
+          </Droppable>
         </div>
       )}
-    </Droppable>
+    </Draggable>
   );
 }

@@ -1,5 +1,5 @@
 import ListTask from './ListTask';
-import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd';
+import { Draggable, Droppable } from 'react-beautiful-dnd';
 import { useState } from 'react';
 
 export default function KanbanCard({
@@ -26,7 +26,7 @@ export default function KanbanCard({
     <Draggable draggableId={title} index={index} key={index}>
       {(provider, snapshot) => (
         <div
-          className="col-span-3"
+          className="w-64"
           ref={provider.innerRef}
           {...provider.draggableProps}
           {...provider.dragHandleProps}

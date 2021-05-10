@@ -1,9 +1,11 @@
-import React, { Component } from 'react';
-import ReactDOM from 'react-dom';
-import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import React from 'react';
+
+import { DragDropContext, Droppable } from 'react-beautiful-dnd';
 import { useState } from 'react';
 import KanbanCard from './components/KanbanCard';
 import { useEffect } from 'react';
+import { uid } from 'uid';
+import { Helmet, HelmetProvider } from 'react-helmet-async';
 
 // a little function to help us with reordering the result
 const reorder = (list, startIndex, endIndex) => {
@@ -17,43 +19,16 @@ const reorder = (list, startIndex, endIndex) => {
 const dataTemplate = [
   {
     category: 'To Do',
-    list: [
-      {
-        id: 'abc',
-        content: 'mandi',
-      },
-      {
-        id: 'dbc',
-        content: 'makan',
-      },
-    ],
+    list: [],
   },
   {
     category: 'In Progress',
-    list: [
-      {
-        id: 'cba',
-        content: 'mandi',
-      },
-      {
-        id: 'bdc',
-        content: 'makan',
-      },
-    ],
+    list: [],
   },
 
   {
     category: 'In Review',
-    list: [
-      {
-        id: 'xyz',
-        content: 'mandi',
-      },
-      {
-        id: 'zyx',
-        content: 'makan',
-      },
-    ],
+    list: [],
   },
 ];
 
@@ -61,9 +36,11 @@ function App() {
   const [kanbanList, setkanbanList] = useState(dataTemplate);
 
   const onDragEnd = (result) => {
-    console.log(result);
+    if (!result.destination) {
+      return;
+    }
 
-    //handle if drag with no destination
+    // handle if drag with no destination
     if (!result.destination) {
       return;
     }
@@ -78,24 +55,34 @@ function App() {
 
     const tempData = Array.from(kanbanList); //temp data for kanbanlist
 
-    /* 
-    handle drag and drop if drag source todo is different 
+    /*
+    handle drag and drop if drag source todo is different
     with drop destination todo but within same kanbanCard
     */
     if (result.source.droppableId === result.destination.droppableId) {
-      const parentOfTodoIndex = kanbanList
-        .map((res) => res.category)
-        .indexOf(result.source.droppableId);
+      if (result.type === 'container') {
+        const orderData = reorder(
+          kanbanList,
+          result.source.index,
+          result.destination.index
+        );
 
-      const orderData = reorder(
-        kanbanList[parentOfTodoIndex].list,
-        result.source.index,
-        result.destination.index
-      );
+        setkanbanList(orderData);
+      } else {
+        const parentOfTodoIndex = kanbanList
+          .map((res) => res.category)
+          .indexOf(result.source.droppableId);
 
-      tempData[parentOfTodoIndex].list = orderData;
+        const orderData = reorder(
+          kanbanList[parentOfTodoIndex].list,
+          result.source.index,
+          result.destination.index
+        );
 
-      setkanbanList(tempData);
+        tempData[parentOfTodoIndex].list = orderData;
+
+        setkanbanList(tempData);
+      }
     } else {
       /*
     handle drag and drop if drag source todo and drop destination todo
@@ -118,35 +105,107 @@ function App() {
 
       setkanbanList(tempData);
     }
+    setKanbanStorage();
   };
 
-  // useEffect(() => {
-  //   const storageKanban = JSON.parse(localStorage.getItem('kanban'));
-  //   if (storageKanban !== null) {
-  //     setkanbanList(storageKanban);
-  //   } else {
-  //     localStorage.setItem('kanban', JSON.stringify(dataTemplate));
-  //   }
-  // }, []);
+  const _addNewList = (idKanban, value) => {
+    const indexCard = kanbanList.map((res) => res.category).indexOf(idKanban);
+    const dataTemp = Array.from(kanbanList);
+
+    const newList = {
+      id: uid(),
+      content: value,
+    };
+    dataTemp[indexCard].list.push(newList);
+
+    setkanbanList(dataTemp);
+    setKanbanStorage();
+  };
+
+  const _removeList = (kanbanCategory, idValue) => {
+    const indexCard = kanbanList
+      .map((res) => res.category)
+      .indexOf(kanbanCategory);
+    const dataTemp = Array.from(kanbanList);
+    const res = dataTemp[indexCard].list.filter((res) => res.id !== idValue);
+
+    dataTemp[indexCard].list = res;
+
+    setkanbanList(dataTemp);
+    setKanbanStorage();
+  };
+
+  const setKanbanStorage = () => {
+    localStorage.setItem('kanban', JSON.stringify(kanbanList));
+  };
+
+  useEffect(() => {
+    const storageKanban = JSON.parse(localStorage.getItem('kanban'));
+    if (storageKanban !== null) {
+      setkanbanList(storageKanban);
+    } else {
+      localStorage.setItem('kanban', JSON.stringify(dataTemplate));
+    }
+  }, []);
 
   return (
-    <div className="max-w-screen-lg mx-auto ">
-      <div className="p-5 text-center ">
-        <h1 className="text-3xl font-bold">Simple Kanban React</h1>
-      </div>
+    <>
+      <HelmetProvider>
+        <Helmet>
+          <title>React DND - Kanban</title>
+          <meta
+            name="description"
+            content="Simple Kanban Board for learning React DnD Beautiful"
+          />
 
-      <DragDropContext onDragEnd={onDragEnd}>
-        <div className="mt-10 w-full grid grid-cols-9 gap-10">
-          {kanbanList.map((kanban) => (
-            <KanbanCard
-              title={kanban.category}
-              todolist={kanban.list}
-              key={kanban.category}
-            />
-          ))}
+          <meta name="twitter:card" content="summary" />
+          <meta name="twitter:site" content="@React DnD - Kanban" />
+          <meta
+            property="og:url"
+            content="http://bits.blogs.nytimes.com/2011/12/08/a-twitter-for-my-sister/"
+          />
+          <meta property="og:title" content="React DnD - Kanban" />
+          <meta
+            property="og:description"
+            content="Simple Kanban Board for learning React DnD Beautiful"
+          />
+        </Helmet>
+      </HelmetProvider>
+
+      <div className="max-w-screen-lg mx-auto ">
+        <div className="p-5 text-center ">
+          <h1 className="text-3xl font-bold">Simple Kanban React</h1>
         </div>
-      </DragDropContext>
-    </div>
+
+        <DragDropContext onDragEnd={onDragEnd}>
+          <Droppable
+            droppableId="container"
+            type="container"
+            direction="horizontal"
+          >
+            {(provider, snapshot) => (
+              <div
+                className="mt-10 w-full flex justify-between gap-10"
+                ref={provider.innerRef}
+                {...provider.droppableProps}
+              >
+                {kanbanList.map((kanban, index) => (
+                  <KanbanCard
+                    addListFunc={_addNewList}
+                    title={kanban.category}
+                    todolist={kanban.list}
+                    key={kanban.category}
+                    index={index}
+                    delFunc={_removeList}
+                  />
+                ))}
+                {provider.placeholder}
+              </div>
+            )}
+          </Droppable>
+        </DragDropContext>
+      </div>
+    </>
   );
 }
 

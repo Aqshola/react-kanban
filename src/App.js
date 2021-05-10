@@ -160,10 +160,7 @@ function App() {
 
           <meta name="twitter:card" content="summary" />
           <meta name="twitter:site" content="@React DnD - Kanban" />
-          <meta
-            property="og:url"
-            content="http://bits.blogs.nytimes.com/2011/12/08/a-twitter-for-my-sister/"
-          />
+          <meta property="og:url" content="https://react-kanban.vercel.app/" />
           <meta property="og:title" content="React DnD - Kanban" />
           <meta
             property="og:description"

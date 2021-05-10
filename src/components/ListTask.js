@@ -5,7 +5,10 @@ export default function ListTask({ id, content, index, removeList, category }) {
     <Draggable draggableId={id} index={index}>
       {(provider, snapshot) => (
         <li
-          className="bg-white rounded-md w-full p-3 font-semibold flex items-center mb-2"
+          className={
+            'bg-white rounded-md w-full p-3 font-semibold flex items-center mb-2 transform transition ' +
+            (snapshot.isDragging && 'shadow-lg ')
+          }
           ref={provider.innerRef}
           {...provider.dragHandleProps}
           {...provider.draggableProps}

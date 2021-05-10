@@ -26,7 +26,7 @@ export default function KanbanCard({
     <Draggable draggableId={title} index={index} key={index}>
       {(provider, snapshot) => (
         <div
-          className="w-64"
+          className={'w-64'}
           ref={provider.innerRef}
           {...provider.draggableProps}
           {...provider.dragHandleProps}
@@ -34,16 +34,19 @@ export default function KanbanCard({
           <Droppable droppableId={title} direction="vertical">
             {(provider, snapshot) => (
               <div
-                className="flex flex-col "
+                className={'flex flex-col transition '}
                 ref={provider.innerRef}
                 {...provider.droppableProps}
               >
                 <h1 className="font-semibold">{title}</h1>
                 <div
-                  className="w-full bg-gray-100 rounded-md flex flex-col mt-5 p-3"
+                  className={
+                    'w-full  rounded-md flex flex-col mt-5 p-3 transition ' +
+                    (snapshot.isDraggingOver ? 'bg-gray-600' : 'bg-gray-200')
+                  }
                   style={{ minHeight: '200px' }}
                 >
-                  <ul className="flex-grow">
+                  <ul className="flex-grow ">
                     {todolist.map((todo, index) => (
                       <ListTask
                         id={todo.id}
